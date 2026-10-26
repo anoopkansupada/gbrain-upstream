@@ -28,7 +28,6 @@ identifiers and attribution are available in the pre-removal Git revision
 ### What to watch for after you upgrade
 
 - A sender mute now closes commitments and decisions for that sender, not only reply-owed loops. Use `--type` to keep the old narrower behavior.
-- `daily-task-manager` documents a `<!-- loop: <id> -->` marker to link a task to its loop. This is a convention only; no new operation.
 
 ## [0.60.465.0] - 2026-10-26
 

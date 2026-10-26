@@ -1,6 +1,6 @@
 ---
 name: daily-task-manager
-version: 2.1.0
+version: 2.0.0
 description: |
   Task lifecycle management with stable task IDs. Add, complete, defer, remove,
   and review tasks with deterministic action routing and fail-closed ambiguity
@@ -16,8 +16,6 @@ tools:
   - get_page
   - put_page
   - add_timeline_entry
-  - open_loops
-  - loops_close
 mutating: true
 upstream: daily-task-manager@fc834ee
 ---
@@ -32,7 +30,6 @@ This skill guarantees:
 - Priority levels: P0 (urgent), P1 (today), P2 (this week), P3 (backlog)
 - Completed tasks archived with completion date; deferred tasks carry a target date + reason
 - Mutations never drop unrelated tasks or unknown sections
-- A task that mirrors a mail commitment keeps one lifecycle with it: it carries the open loop's id, and completing or removing the task closes that loop (see Loop link)
 - Every action returns the structured result below (Returns)
 
 ### Returns
@@ -70,15 +67,6 @@ Map user intent deterministically before touching state:
    - **Remove:** Destructive — require explicit confirmation unless the user's message already contains it. Prefer suggesting complete or defer.
    - **Review:** Read-only. Never mutates. Active tasks grouped by priority, IDs shown.
 5. **Save.** `put_page("ops/tasks.md")` after any mutation. Diff-mindset: touch only the affected lines; preserve all other content, including sections this skill doesn't recognize.
-
-## Loop link (open-loops engine)
-
-Mail commitments live in the open-loops engine (`open_loops`, `gbrain waiting`), not on `ops/tasks.md`. When a task is created from one, record the loop's id on the task line as `<!-- loop: <id> -->` next to the task id, so the two lists are one obligation instead of two.
-
-- **Add from a loop:** take the id from `open_loops` (never guess it); write the marker.
-- **Complete:** after saving the page, call `loops_close` with `status: done` for that id. **Remove:** `status: dropped`. **Defer:** leave the loop open.
-- A `loops_close` that returns `closed: false` (already closed, or another source) is not an error: the task still completes; say so in the reply.
-- A loop that closes on its own (the reply landed) does not complete the task; `review` may call `open_loops` with the marker's `id` and flag a task whose loop is already closed, but never mutates on that signal alone.
 
 ## Edge Cases
 
@@ -142,7 +130,6 @@ Each with its corrective action:
 - Fabricating due dates, priorities, or reasons → never invent required fields; ask.
 - Unbounded list growth → when Backlog exceeds ~20 items, prompt a weekly review.
 - Storing tasks outside the brain page → everything lives in `ops/tasks.md` (searchable).
-- Completing a task that carries a `loop:` marker without closing the loop → the same commitment then shows up in `gbrain waiting`; close both.
 - Running parallel task mutations against `ops/tasks.md` → last-writer-wins whole-page `put_page` silently loses updates and mints duplicate IDs; serialize edits, re-read immediately before writing.
 
 ## Design Rationale (failure modes this version closes)

@@ -458,10 +458,6 @@ holds no Google source, in a brain that has some, gets
 `no_google_sources: true`. Pass `source_id` for one of them with a grant that
 covers it, or read it from the trusted local CLI.
 
-**Tasks and loops (#7290).** Mail commitments live here, not on `ops/tasks`.
-A task created from a loop carries `<!-- loop: <id> -->`; completing or
-removing it closes the loop (daily-task-manager skill, "Loop link").
-
 **One quote, one loop (#7289).** The extractor's dedup key hashes the thread,
 direction and the verbatim quote, not the model's paraphrase, and a loop
 written under the old text key is reused when the same quote comes back.
